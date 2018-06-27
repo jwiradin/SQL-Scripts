@@ -24,24 +24,26 @@ insert into #fund values(3,300)
 insert into #fund values(4,5000)
 
 update	t
-set	    fulfilled = (select case when max(f1.fundAmt) - sum(t1.shortage) > 0 
+set	    fulfilled = (select case when f.fundAmt - sum(t1.shortage) > 0 
 							then	t.shortage 
-							else case	when max(f1.fundAmt) - (sum(t1.shortage) - t.shortage) > 0 
-										then  max(f1.fundAmt) - (sum(t1.shortage) - t.shortage) 
+							else case	when f.fundAmt - (sum(t1.shortage) - t.shortage) > 0 
+										then  f.fundAmt - (sum(t1.shortage) - t.shortage) 
 										else 0 
 								 end 
 							end 
-					 from	#fund f1 
-							join #tmp t1 on f1.fundId = t1.fundId and f1.fundId = t.fundId and  t.accId >= t1.accId)
+					 from	#tmp t1 
+					 where	t.fundId = t1.fundId 
+					 and	t.accId >= t1.accId)
 from	#tmp t
 		join #fund f on t.fundId = f.fundId
 
 select	t.*, 
+		t.shortage - t.fulfilled 'outstanding shortage',
+		f.fundAmt,
 		case when f.fundAmt - (select sum(t1.fulfilled) from #tmp t1 where t1.accId <= t.accId and t1.fundId = t.fundId) > 0 
 			then f.fundAmt - (select sum(t1.fulfilled) from #tmp t1 where t1.accId <= t.accId and t1.fundId = t.fundId) 
 			else 0 
-		end 'remainder', 
-		f.fundAmt
+		end 'remainder fund'
 from	#tmp t
 		join #fund f on t.fundId = f.fundId
 
