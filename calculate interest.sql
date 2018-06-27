@@ -34,7 +34,8 @@ set		bal = @BegBal + (select sum(tramt) from #trans t where t.trdate <= #work.tr
 		tramt = isnull((select tramt from #trans t where t.trdate = #work.trdate),0)
 
 update	#work
-set		trint = (@IntRate * @Multiplier / DATEDIFF(dd, '1 jan ' + convert(char(4), datepart(yy,trdate)), dateadd(dd,-1,'1 jan ' + convert(char(4), datepart(yy,trdate)  +1)))) * bal /@Multiplier
+set		trint = (@IntRate * @Multiplier / DATEDIFF(dd, '1 jan ' + convert(char(4), datepart(yy,trdate)), '1 jan ' + convert(char(4), datepart(yy,trdate)  +1))) * bal /@Multiplier
 
 
 select * from #work
+
